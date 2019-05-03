@@ -53,10 +53,14 @@ using namespace matrix;
 PositionControl::PositionControl()
 {
 	_Pz_h   = param_find("MPC_Z_P");
+	_Iz_h 	= param_find("MPC_Z_I");
+	_Dz_h	= param_find("MPC_Z_D");
 	_Pvz_h  = param_find("MPC_Z_VEL_P");
 	_Ivz_h  = param_find("MPC_Z_VEL_I");
 	_Dvz_h  = param_find("MPC_Z_VEL_D");
 	_Pxy_h  = param_find("MPC_XY_P");
+	_Ixy_h  = param_find("MPC_XY_I");
+	_Dxy_h 	= param_find("MPC_XY_D");
 	_Pvxy_h = param_find("MPC_XY_VEL_P");
 	_Ivxy_h = param_find("MPC_XY_VEL_I");
 	_Dvxy_h = param_find("MPC_XY_VEL_D");
@@ -316,6 +320,14 @@ void PositionControl::_setParams()
 	param_get(_Pxy_h, &Pp(0));
 	param_get(_Pxy_h, &Pp(1));
 	param_get(_Pz_h, &Pp(2));
+
+	param_get(_Ixy_h, &Ip(0));
+	param_get(_Ixy_h, &Ip(1));
+	param_get(_Iz_h, &Ip(2));
+
+	param_get(_Dxy_h, &Dp(0));
+	param_get(_Dxy_h, &Dp(1));
+	param_get(_Dz_h, &Dp(2));
 
 	param_get(_Pvxy_h, &Pv(0));
 	param_get(_Pvxy_h, &Pv(1));

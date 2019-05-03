@@ -99,10 +99,14 @@ private:
 	/* Parameter handles */
 	int _parameter_sub{-1};
 	param_t _Pz_h{PARAM_INVALID};
+	param_t _Iz_h{PARAM_INVALID};
+	param_t _Dz_h{PARAM_INVALID};
 	param_t _Pvz_h{PARAM_INVALID};
 	param_t _Ivz_h{PARAM_INVALID};
 	param_t _Dvz_h{PARAM_INVALID};
 	param_t _Pxy_h{PARAM_INVALID};
+	param_t _Ixy_h{PARAM_INVALID};
+	param_t _Dxy_h{PARAM_INVALID};
 	param_t _Pvxy_h{PARAM_INVALID};
 	param_t _Ivxy_h{PARAM_INVALID};
 	param_t _Dvxy_h{PARAM_INVALID};
@@ -114,7 +118,7 @@ private:
 	param_t _ThrMin_h{PARAM_INVALID};
 
 	/* Parameters */
-	matrix::Vector3f Pp, Pv, Iv, Dv = matrix::Vector3f{0.0f, 0.0f, 0.0f};
+	matrix::Vector3f Pp, Ip, Dp, Pv, Iv, Dv = matrix::Vector3f{0.0f, 0.0f, 0.0f};
 	float _VelMaxXY{};
 	struct DirectionD {
 		float up;
