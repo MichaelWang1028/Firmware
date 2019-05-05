@@ -239,6 +239,11 @@ private:
 
 	);
 
+	/* add for derivative of pose control */
+	control::BlockDerivative _pos_x_deriv;
+	control::BlockDerivative _pos_y_deriv;
+	control::BlockDerivative _pos_z_deriv;
+	/* add for derivative of pose control */
 
 	control::BlockDerivative _vel_x_deriv;
 	control::BlockDerivative _vel_y_deriv;
@@ -486,6 +491,9 @@ MulticopterPositionControl::MulticopterPositionControl() :
 	_pos_sp_triplet{},
 	_local_pos_sp{},
 	_home_pos{},
+	_pos_x_deriv(this, "POSD"),
+	_pos_y_deriv(this, "POSD"),
+	_pos_z_deriv(this, "POSD"),
 	_vel_x_deriv(this, "VELD"),
 	_vel_y_deriv(this, "VELD"),
 	_vel_z_deriv(this, "VELD"),
@@ -2327,6 +2335,12 @@ MulticopterPositionControl::update_velocity_derivative()
 		}
 	}
 
+	_pos_err_d(0) = _pos_x_deriv.update(-_pos(0));
+
+	_pos_err_d(1) = _pos_y_deriv.update(-_pos(1));
+
+	_pos_err_d(2) = _pos_z_deriv.update(-_pos(2));
+
 	if (PX4_ISFINITE(_local_pos.vx) &&
 	    PX4_ISFINITE(_local_pos.vy) &&
 	    PX4_ISFINITE(_local_pos.vz)) {
@@ -3479,17 +3493,17 @@ MulticopterPositionControl::landdetection_thrust_limit(matrix::Vector3f &thrust_
 
 void MulticopterPositionControl::pid_controller_xy()
 {
-	/* keep prev error value */
-	_pos_err_prev(0) = _pos_err(0);
-	_pos_err_prev(1) = _pos_err(1);
+	// /* keep prev error value */
+	// _pos_err_prev(0) = _pos_err(0);
+	// _pos_err_prev(1) = _pos_err(1);
 
-	/* calculate pose error */
-	_pos_err(0) = _pos_sp(0) - _pos(0);
-	_pos_err(1) = _pos_sp(1) - _pos(1);
+	// /* calculate pose error */
+	// _pos_err(0) = _pos_sp(0) - _pos(0);
+	// _pos_err(1) = _pos_sp(1) - _pos(1);
 
-	/* calculate derivative of pose error */
-	_pos_err_d(0) = (_pos_err(0) - _pos_err_prev(0))/_dt;
-	_pos_err_d(1) = (_pos_err(1) - _pos_err_prev(1))/_dt;
+	// /* calculate derivative of pose error */
+	// _pos_err_d(0) = (_pos_err(0) - _pos_err_prev(0))/_dt;
+	// _pos_err_d(1) = (_pos_err(1) - _pos_err_prev(1))/_dt;
 
 	/* generate velocity expectation */
 	_vel_sp(0) = _pos_err(0) * (_pos_p(0)) + _pos_err_d(0) * (_pos_d(0)) + _pos_err_int(0);
@@ -3508,14 +3522,14 @@ void MulticopterPositionControl::pid_controller_xy()
 
 void MulticopterPositionControl::pid_controller_x(float _pos_sp_x)
 {
-	/* keep prev error value */
-	_pos_err_prev(0) = _pos_err(0);
+	// /* keep prev error value */
+	// _pos_err_prev(0) = _pos_err(0);
 
-	/* calculate pose error */
-	_pos_err(0) = _pos_sp_x - _pos(0);
+	// /* calculate pose error */
+	// _pos_err(0) = _pos_sp_x - _pos(0);
 
-	/* calculate derivative of pose error */
-	_pos_err_d(0) = (_pos_err(0) - _pos_err_prev(0))/_dt;
+	// /* calculate derivative of pose error */
+	// _pos_err_d(0) = (_pos_err(0) - _pos_err_prev(0))/_dt;
 
 	/* generate velocity expectation */
 	_vel_sp(0) = _pos_err(0) * (_pos_p(0)) + _pos_err_d(0) * (_pos_d(0)) + _pos_err_int(0);
@@ -3529,14 +3543,14 @@ void MulticopterPositionControl::pid_controller_x(float _pos_sp_x)
 
 void MulticopterPositionControl::pid_controller_z(float _pos_sp_z)
 {
-	/* keep prev error value */
-	_pos_err_prev(2) = _pos_err(2);
+	// /* keep prev error value */
+	// _pos_err_prev(2) = _pos_err(2);
 
-	/* calculate pose error */
-	_pos_err(2) = _pos_sp_z - _pos(2);
+	// /* calculate pose error */
+	// _pos_err(2) = _pos_sp_z - _pos(2);
 
-	/* calculate derivative of pose error */
-	_pos_err_d(2) = (_pos_err(2) - _pos_err_prev(2))/_dt;
+	// /* calculate derivative of pose error */
+	// _pos_err_d(2) = (_pos_err(2) - _pos_err_prev(2))/_dt;
 
 	/* generate velocity expectation */
 	_vel_sp(2) = _pos_err(2) * (_pos_p(2)) + _pos_err_d(2) * (_pos_d(2)) + _pos_err_int(2);
