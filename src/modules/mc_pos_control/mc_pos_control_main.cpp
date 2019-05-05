@@ -450,10 +450,6 @@ private:
 	 */
 	void pid_controller_z(float _pos_sp_z);
 
-	/**
-	 * PID controller for x direction.
-	 */
-	void pid_controller_x(float _pos_sp_x);
 };
 
 namespace pos_control
@@ -917,8 +913,7 @@ MulticopterPositionControl::limit_altitude()
 
 	// limit the velocity setpoint to not exceed a value that will allow controlled
 	// deceleration to a stop at the height limit
-	pid_controller_z(poz_z_min_limit);
-	float vel_z_sp_altctl = _vel_sp(2);
+	float vel_z_sp_altctl = (poz_z_min_limit - _pos(2)) * _pos_p(2);
 	vel_z_sp_altctl = fminf(vel_z_sp_altctl, _vel_max_down.get());
 	_vel_sp(2) = fmaxf(_vel_sp(2), vel_z_sp_altctl);
 
@@ -1933,15 +1928,10 @@ void MulticopterPositionControl::control_auto()
 				/* if we already close to current, then just take over the velocity that
 				 * we would have computed if going directly to the current setpoint
 				 */
-				pid_controller_z(dist_to_current_z);
-				// if (vel_sp_z >= (dist_to_current_z * _pos_p(2))) {
-				// 	vel_sp_z = dist_to_current_z * _pos_p(2);
-				// }
-				if (vel_sp_z >= _vel_sp(2)) {
-					pid_controller_z(dist_to_current_z);
-					vel_sp_z = _vel_sp(2);
+				if (vel_sp_z >= (dist_to_current_z * _pos_p(2))) {
+					vel_sp_z = dist_to_current_z * _pos_p(2);
 				}
-
+				
 				/* make sure vel_sp_z is always positive */
 				vel_sp_z = math::constrain(vel_sp_z, 0.0f, final_vel_z);
 				/* get the sign of vel_sp_z */
@@ -2019,8 +2009,7 @@ void MulticopterPositionControl::control_auto()
 				if (previous_in_front && (vec_prev_to_pos.length() > 5.0f)) {
 
 					/* just use the default velocity along track */
-					pid_controller_x(vec_prev_to_pos.length());
-					vel_sp_along_track = _vel_sp(0);
+					vel_sp_along_track = vec_pos_to_current.length() * _pos_p(0);
 
 					if (vel_sp_along_track > get_cruising_speed_xy()) {
 						vel_sp_along_track = get_cruising_speed_xy();
@@ -2028,8 +2017,7 @@ void MulticopterPositionControl::control_auto()
 
 				} else if (current_behind) {
 					/* go directly to current setpoint */
-					pid_controller_x(vec_pos_to_current.length());
-					vel_sp_along_track = _vel_sp(0);
+					vel_sp_along_track = vec_pos_to_current.length() * _pos_p(0);
 					vel_sp_along_track = (vel_sp_along_track < get_cruising_speed_xy()) ? vel_sp_along_track : get_cruising_speed_xy();
 
 				} else if (close_to_prev) {
@@ -2154,8 +2142,7 @@ void MulticopterPositionControl::control_auto()
 
 				/* compute velocity orthogonal to prev-current-line to position*/
 				matrix::Vector2f vec_pos_to_closest = closest_point - matrix::Vector2f(_pos(0), _pos(1));
-				pid_controller_x(vec_pos_to_closest.length());
-				float vel_sp_orthogonal = _vel_sp(0);
+				float vel_sp_orthogonal = vec_pos_to_closest.length() * _pos_p(0);
 
 				/* compute the cruise speed from velocity along line and orthogonal velocity setpoint */
 				float cruise_sp_mag = sqrtf(vel_sp_orthogonal * vel_sp_orthogonal + vel_sp_along_track * vel_sp_along_track);
@@ -2196,8 +2183,7 @@ void MulticopterPositionControl::control_auto()
 					}
 
 					/* make sure that we never exceed maximum cruise speed */
-					pid_controller_x(vec_pos_to_closest.length());
-					float cruise_sp = _vel_sp(0);
+					float cruise_sp = vec_pos_to_closest.length() * _pos_p(0);
 
 					if (cruise_sp > get_cruising_speed_xy()) {
 						cruise_sp = get_cruising_speed_xy();
@@ -3510,35 +3496,12 @@ void MulticopterPositionControl::pid_controller_xy()
 	_vel_sp(1) = _pos_err(1) * (_pos_p(1)) + _pos_err_d(1) * (_pos_d(1)) + _pos_err_int(1);
 
 	/* update pos integrals */
-	if(abs(_vel_sp(0)) < _vel_max_xy)
+	if((_vel_sp(0) * _vel_sp(0) +  _vel_sp(1) * _vel_sp(1)) < (_vel_max_xy * _vel_max_xy))
 	{
 		_pos_err_int(0) += _pos_err(0) * _pos_i(0) * _dt;
-	}
-	if(abs(_vel_sp(1)) < _vel_max_xy)
-	{
 		_pos_err_int(1) += _pos_err(1) * _pos_i(1) * _dt;
 	}
-}
 
-void MulticopterPositionControl::pid_controller_x(float _pos_sp_x)
-{
-	// /* keep prev error value */
-	// _pos_err_prev(0) = _pos_err(0);
-
-	// /* calculate pose error */
-	// _pos_err(0) = _pos_sp_x - _pos(0);
-
-	// /* calculate derivative of pose error */
-	// _pos_err_d(0) = (_pos_err(0) - _pos_err_prev(0))/_dt;
-
-	/* generate velocity expectation */
-	_vel_sp(0) = _pos_err(0) * (_pos_p(0)) + _pos_err_d(0) * (_pos_d(0)) + _pos_err_int(0);
-
-	/* update pos integrals */
-	if(abs(_vel_sp(0)) < _vel_max_xy)
-	{
-		_pos_err_int(0) += _pos_err(0) * _pos_i(0) * _dt;
-	}
 }
 
 void MulticopterPositionControl::pid_controller_z(float _pos_sp_z)
