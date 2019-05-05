@@ -1925,8 +1925,13 @@ void MulticopterPositionControl::control_auto()
 				/* if we already close to current, then just take over the velocity that
 				 * we would have computed if going directly to the current setpoint
 				 */
-				if (vel_sp_z >= (dist_to_current_z * _pos_p(2))) {
-					vel_sp_z = dist_to_current_z * _pos_p(2);
+				pid_controller_z(dist_to_current_z);
+				// if (vel_sp_z >= (dist_to_current_z * _pos_p(2))) {
+				// 	vel_sp_z = dist_to_current_z * _pos_p(2);
+				// }
+				if (vel_sp_z >= _vel_sp(2)) {
+					pid_controller_z(dist_to_current_z);
+					vel_sp_z = _vel_sp(2);
 				}
 
 				/* make sure vel_sp_z is always positive */
